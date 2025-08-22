@@ -125,12 +125,12 @@ variable "databases" {
   default = []
 }
 
-variable create_database {
-  description = "Flag to create databases"
-  type        = bool
-}
+# variable create_database {
+#   description = "Flag to create databases"
+#   type        = bool
+# }
 
-variable create_airflow {
-  description = "Flag to create Airflow resources"
-  type        = bool
-}
+# variable create_airflow {
+#   description = "Flag to create Airflow resources"
+#   type        = bool
+# }

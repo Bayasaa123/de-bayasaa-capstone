@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 module "ec2-datatabase" {
-  count = var.create_database ? 1 : 0
+  # count = var.create_database ? 1 : 0
   source          = "./modules/ec2_instance"
   project         = var.project
   environment     = var.environment
@@ -52,6 +52,7 @@ module "ec2-datatabase" {
 }
 
 # module "ec2-airflow" {
+#   count = var.create_airflow ? 1 : 0
 #   source          = "./modules/ec2_instance"
 #   project         = var.project
 #   environment     = var.environment

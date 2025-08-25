@@ -25,3 +25,5 @@ databases = [
     { name = "bootcamp_db",  user = "bootcamp", password = "password" },
     { name = "metabase_db",  user = "metabase_user", password = "metabase_password" }
 ]
+
+ip_addresses = [ "10.20.1.50", "10.20.1.51" ]

@@ -130,7 +130,12 @@ variable create_database {
   type        = bool
 }
 
-# variable create_airflow {
-#   description = "Flag to create Airflow resources"
-#   type        = bool
-# }
+variable create_airflow {
+  description = "Flag to create Airflow resources"
+  type        = bool
+}
+
+variable ip_addresses {
+  description = "List of IP addresses allowed to access the EC2 instance"
+  type        = list(string)
+}

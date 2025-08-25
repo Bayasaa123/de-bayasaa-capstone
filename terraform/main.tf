@@ -25,6 +25,9 @@ module "ec2-datatabase" {
   airflow_logs_bucket = ""
   airflow_admin_user = ""
   airflow_admin_pass = ""
+  
+  private_ip = var.ip_addresses[0]
+
   user_data = <<-EOF
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -51,99 +54,102 @@ module "ec2-datatabase" {
   EOF
 }
 
-# module "ec2-airflow" {
-#   count = var.create_airflow ? 1 : 0
-#   source          = "./modules/ec2_instance"
-#   project         = var.project
-#   environment     = var.environment
-#   instance_type   = var.instance_type
-#   role_name       = "ec2-airflow"
-#   subnet_id       = module.network.public_subnet_ids[0]
-#   vpc_id          = module.network.vpc_id
-#   security_group_ids = [aws_security_group.sg_airflow.id, aws_security_group.sg.id]
-#   airflow_logs_bucket = module.data_bucket.bucket_name
-#   airflow_admin_user = var.airflow_admin_user
-#   airflow_admin_pass = var.airflow_admin_pass
-#   user_data = <<-EOF
-#     #!/usr/bin/env bash
-#     set -euxo pipefail
+module "ec2-airflow" {
+  count = var.create_airflow ? 1 : 0
+  source          = "./modules/ec2_instance"
+  project         = var.project
+  environment     = var.environment
+  depends_on = [module.ec2-datatabase]
+  instance_type   = var.instance_type
+  role_name       = "ec2-airflow"
+  subnet_id       = module.network.public_subnet_ids[0]
+  vpc_id          = module.network.vpc_id
+  security_group_ids = [aws_security_group.sg_airflow.id, aws_security_group.sg.id]
+  airflow_logs_bucket = module.data_bucket.bucket_name
+  airflow_admin_user = var.airflow_admin_user
+  airflow_admin_pass = var.airflow_admin_pass
+  private_ip = var.ip_addresses[1]
 
-#     dnf -y update
-#     dnf -y install python3.11 python3.11-pip git
+  user_data = <<-EOF
+    #!/usr/bin/env bash
+    set -euxo pipefail
 
-#     # Create airflow user + venv
-#     id -u airflow &>/dev/null || useradd -m -s /bin/bash airflow
-#     su - airflow -c "python3.11 -m venv ~/venv && source ~/venv/bin/activate && pip install --upgrade pip && pip install psycopg2-binary"
-#     su - airflow -c "source ~/venv/bin/activate && pip install 'apache-airflow[amazon]==2.9.2'"
+    dnf -y update
+    dnf -y install python3.11 python3.11-pip git
 
-#     # AIRFLOW_HOME
-#     echo 'export AIRFLOW_HOME=/home/airflow/airflow' >> /home/airflow/.bashrc
-#     su - airflow -c "mkdir -p ~/airflow/dags ~/airflow/logs"
+    # Create airflow user + venv
+    id -u airflow &>/dev/null || useradd -m -s /bin/bash airflow
+    su - airflow -c "python3.11 -m venv ~/venv && source ~/venv/bin/activate && pip install --upgrade pip && pip install psycopg2-binary"
+    su - airflow -c "source ~/venv/bin/activate && pip install 'apache-airflow[amazon]==2.9.2'"
 
-#     # Generate a Fernet key (used to encrypt connections/variables)
-#     FERNET_KEY=$(su - airflow -c "source ~/venv/bin/activate && python - <<'PY'
-#     from cryptography.fernet import Fernet
-#     print(Fernet.generate_key().decode())
-#     PY
-#     ")
+    # AIRFLOW_HOME
+    echo 'export AIRFLOW_HOME=/home/airflow/airflow' >> /home/airflow/.bashrc
+    su - airflow -c "mkdir -p ~/airflow/dags ~/airflow/logs"
 
-#     # Write environment file consumed by systemd units and CLI
-#     install -d -m 0755 /etc/airflow
-#     cat >/etc/airflow/airflow.env <<ENV
-#     AIRFLOW_HOME=/home/airflow/airflow
-#     AIRFLOW__CORE__EXECUTOR=LocalExecutor
-#     AIRFLOW__CORE__LOAD_EXAMPLES=False
-#     AIRFLOW__CORE__FERNET_KEY=$${FERNET_KEY}
-#     AIRFLOW__WEBSERVER__SECRET_KEY=$${FERNET_KEY}
-#     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@16.176.163.114:5432/airflow_db
-#     ENV
-#     chmod 0640 /etc/airflow/airflow.env
-#     chgrp airflow /etc/airflow/airflow.env
+    # Generate a Fernet key (used to encrypt connections/variables)
+    FERNET_KEY=$(su - airflow -c "source ~/venv/bin/activate && python - <<'PY'
+    from cryptography.fernet import Fernet
+    print(Fernet.generate_key().decode())
+    PY
+    ")
 
-#     # Initialize the Airflow DB on Postgres (env must be loaded for this)
-#     su - airflow -c "set -a; source /etc/airflow/airflow.env; set +a; source ~/venv/bin/activate; airflow db init"
+    # Write environment file consumed by systemd units and CLI
+    install -d -m 0755 /etc/airflow
+    cat >/etc/airflow/airflow.env <<ENV
+    AIRFLOW_HOME=/home/airflow/airflow
+    AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES=False
+    AIRFLOW__CORE__FERNET_KEY=$${FERNET_KEY}
+    AIRFLOW__WEBSERVER__SECRET_KEY=$${FERNET_KEY}
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@16.176.163.114:5432/airflow_db
+    ENV
+    chmod 0640 /etc/airflow/airflow.env
+    chgrp airflow /etc/airflow/airflow.env
 
-#     # Create admin user
-#     su - airflow -c "set -a; source /etc/airflow/airflow.env; set +a; source ~/venv/bin/activate; airflow users create --username '${var.airflow_admin_user}' --password '${var.airflow_admin_pass}' --firstname Admin --lastname User --role Admin --email admin@example.com"
+    # Initialize the Airflow DB on Postgres (env must be loaded for this)
+    su - airflow -c "set -a; source /etc/airflow/airflow.env; set +a; source ~/venv/bin/activate; airflow db init"
+
+    # Create admin user
+    su - airflow -c "set -a; source /etc/airflow/airflow.env; set +a; source ~/venv/bin/activate; airflow users create --username '${var.airflow_admin_user}' --password '${var.airflow_admin_pass}' --firstname Admin --lastname User --role Admin --email admin@example.com"
 
 
-#     # Simple systemd units
-#     cat >/etc/systemd/system/airflow-webserver.service <<'UNIT'
-#     [Unit]
-#     Description=Airflow Webserver
-#     After=network.target
+    # Simple systemd units
+    cat >/etc/systemd/system/airflow-webserver.service <<'UNIT'
+    [Unit]
+    Description=Airflow Webserver
+    After=network.target
 
-#     [Service]
-#     User=airflow
-#     Environment=PATH=/home/airflow/venv/bin
-#     Environment=AIRFLOW_HOME=/home/airflow/airflow
-#     ExecStart=/home/airflow/venv/bin/airflow webserver --port 8080
-#     Restart=always
+    [Service]
+    User=airflow
+    Environment=PATH=/home/airflow/venv/bin
+    Environment=AIRFLOW_HOME=/home/airflow/airflow
+    ExecStart=/home/airflow/venv/bin/airflow webserver --port 8080
+    Restart=always
 
-#     [Install]
-#     WantedBy=multi-user.target
-#     UNIT
+    [Install]
+    WantedBy=multi-user.target
+    UNIT
 
-#     cat >/etc/systemd/system/airflow-scheduler.service <<'UNIT'
-#     [Unit]
-#     Description=Airflow Scheduler
-#     After=network.target
+    cat >/etc/systemd/system/airflow-scheduler.service <<'UNIT'
+    [Unit]
+    Description=Airflow Scheduler
+    After=network.target
 
-#     [Service]
-#     User=airflow
-#     Environment=PATH=/home/airflow/venv/bin
-#     Environment=AIRFLOW_HOME=/home/airflow/airflow
-#     ExecStart=/home/airflow/venv/bin/airflow scheduler
-#     Restart=always
+    [Service]
+    User=airflow
+    Environment=PATH=/home/airflow/venv/bin
+    Environment=AIRFLOW_HOME=/home/airflow/airflow
+    ExecStart=/home/airflow/venv/bin/airflow scheduler
+    Restart=always
 
-#     [Install]
-#     WantedBy=multi-user.target
-#     UNIT
+    [Install]
+    WantedBy=multi-user.target
+    UNIT
 
-#     systemctl daemon-reload
-#     systemctl enable --now airflow-webserver.service airflow-scheduler.service
-#   EOF
-# }
+    systemctl daemon-reload
+    systemctl enable --now airflow-webserver.service airflow-scheduler.service
+  EOF
+}
 
 module "code_bucket" {
   source      = "./modules/s3_bucket"

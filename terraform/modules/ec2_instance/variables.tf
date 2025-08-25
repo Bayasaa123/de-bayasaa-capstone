@@ -57,3 +57,8 @@ variable role_name {
   description = "The name of the IAM role to create"
   type        = string
 }
+
+variable private_ip {
+  description = "The private IP address to assign to the EC2 instance"
+  type        = string
+}

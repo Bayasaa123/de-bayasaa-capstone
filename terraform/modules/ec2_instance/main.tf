@@ -11,6 +11,8 @@ resource "aws_instance" "this" {
   user_data                   = local.user_data
   key_name = "bootcomp-key"
 
+  private_ip = var.private_ip
+
   tags = {
     Name        = var.role_name
     Project     = var.project

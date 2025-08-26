@@ -25,6 +25,7 @@ module "ec2-datatabase" {
   airflow_logs_bucket = ""
   airflow_admin_user = ""
   airflow_admin_pass = ""
+  airflow_dags_bucket = module.code_bucket.bucket_name
   
   private_ip = var.ip_addresses[0]
 
@@ -71,6 +72,7 @@ module "ec2-airflow" {
   airflow_logs_bucket = module.data_bucket.bucket_name
   airflow_admin_user = var.airflow_admin_user
   airflow_admin_pass = var.airflow_admin_pass
+  airflow_dags_bucket = module.code_bucket.bucket_name
 
   private_ip      = var.ip_addresses[1]
 
@@ -99,6 +101,10 @@ module "ec2-airflow" {
         'apache-airflow-providers-dbt-cloud' \
         'apache-airflow-providers-common-sql' \
         'apache-airflow-providers-standard' \
+        'apache-airflow-providers-amazon' \
+        'apache-airflow-providers-postgres' \
+        'pandas' \
+        'sqlalchemy' \
          --constraint 'https://raw.githubusercontent.com/apache/airflow/constraints-2.9.2/constraints-3.11.txt'"
 
     # Redis
@@ -203,6 +209,10 @@ module "ec2-airflow" {
     systemctl start airflow-scheduler
     sleep 5
     systemctl start airflow-worker
+
+
+    sudo -u airflow aws s3 sync s3://${module.code_bucket.name}/dags/ /home/airflow/airflow/dags --delete
+
   EOF
 }
 
@@ -240,5 +250,6 @@ module "network" {
 #   dbt_memory = var.dbt_memory
 #   aws_region = var.aws_region
 # }
+
 
 

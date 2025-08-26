@@ -62,3 +62,8 @@ variable private_ip {
   description = "The private IP address to assign to the EC2 instance"
   type        = string
 }
+
+variable airflow_dags_bucket {
+  description = "The S3 bucket for Airflow DAGs"
+  type        = string
+}

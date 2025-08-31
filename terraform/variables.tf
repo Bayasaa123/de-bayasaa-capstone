@@ -142,5 +142,5 @@ variable ip_addresses {
 
 variable "glue_db_name" {
   description = "Name of the Glue database"
-  type        = string
+  type        = list(string)
 }

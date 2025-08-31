@@ -139,3 +139,8 @@ variable ip_addresses {
   description = "List of IP addresses allowed to access the EC2 instance"
   type        = list(string)
 }
+
+variable "glue_db_name" {
+  description = "Name of the Glue database"
+  type        = string
+}

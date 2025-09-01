@@ -1,17 +1,15 @@
-
-
 resource "aws_instance" "this" {
   ami                         = "ami-0deeb71371199f16f"
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = var.security_group_ids                               
+  vpc_security_group_ids      = var.security_group_ids
   iam_instance_profile        = aws_iam_instance_profile.profile.name
   associate_public_ip_address = true
 
+  key_name                    = "bootcomp-key"
   user_data                   = local.user_data
-  key_name = "bootcomp-key"
 
-  private_ip = var.private_ip
+  private_ip                  = var.private_ip
 
   tags = {
     Name        = var.role_name
@@ -21,3 +19,20 @@ resource "aws_instance" "this" {
 }
 
 
+resource "null_resource" "instance" {
+  count = var.airflow_scripts ? 1 : 0
+
+  provisioner "local-exec" {
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = var.ssh_private_key
+      host        = aws_instance.this[0].public_ip
+    }
+
+    command = var.airflow_scripts
+  }
+
+  depends_on = [aws_instance.this]
+}
+ 

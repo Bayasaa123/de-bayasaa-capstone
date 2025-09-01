@@ -67,3 +67,13 @@ variable airflow_dags_bucket {
   description = "The S3 bucket for Airflow DAGs"
   type        = string
 }
+
+variable airflow_scripts {
+  description = "Local script to run after instance creation"
+  type        = string
+}
+
+variable ssh_private_key {
+  description = "Private key for SSH access to the instance"
+  type        = string
+}

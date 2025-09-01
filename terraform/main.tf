@@ -25,7 +25,10 @@ module "ec2-datatabase" {
   airflow_logs_bucket = ""
   airflow_admin_user = ""
   airflow_admin_pass = ""
-  airflow_dags_bucket = module.code_bucket.bucket_name
+  # airflow_dags_bucket = module.code_bucket.bucket_name
+  airflow_dags_bucket = ""
+  airflow_scripts = ""
+  ssh_private_key = var.ssh_private_key
   
   private_ip = var.ip_addresses[0]
 
@@ -73,6 +76,7 @@ module "ec2-airflow" {
   airflow_admin_user = var.airflow_admin_user
   airflow_admin_pass = var.airflow_admin_pass
   airflow_dags_bucket = module.code_bucket.bucket_name
+  airflow_scripts  = "sudo -u airflow aws s3 sync s3://${module.code_bucket.bucket_name}/dags/ /home/airflow/airflow/dags --delete"
 
   private_ip      = var.ip_addresses[1]
 
@@ -240,17 +244,17 @@ module "network" {
   region      = var.aws_region
 }
 
-# module "batch" {
-#   source     = "./modules/batch"
-#   project    = var.project
-#   environment = var.environment
-#   vpc_id = module.network.vpc_id #"vpc-0e700d027b958f93d"
-#   private_subnet_ids = module.network.public_subnet_ids #["subnet-00bf716de07fa9b9e", "subnet-0f4239c97c2186c87", "subnet-0134bb6729ec86325"]
-#   dbt_container_image = var.dbt_container_image
-#   dbt_vcpu = var.dbt_vcpu
-#   dbt_memory = var.dbt_memory
-#   aws_region = var.aws_region
-# }
+module "batch" {
+  source     = "./modules/batch"
+  project    = var.project
+  environment = var.environment
+  vpc_id = module.network.vpc_id #"vpc-0e700d027b958f93d"
+  private_subnet_ids = module.network.public_subnet_ids #["subnet-00bf716de07fa9b9e", "subnet-0f4239c97c2186c87", "subnet-0134bb6729ec86325"]
+  dbt_container_image = var.dbt_container_image
+  dbt_vcpu = var.dbt_vcpu
+  dbt_memory = var.dbt_memory
+  aws_region = var.aws_region
+}
 
 
 

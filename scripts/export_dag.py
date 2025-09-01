@@ -19,7 +19,7 @@ S3_PREFIX        = Variable.get("LAKE_RAW_PREFIX", default_var="raw")
 CHUNK_ROWS       = int(Variable.get("EXPORT_CHUNK_ROWS", default_var="200000"))  # tune if needed
 
 def _export_one_table(table: str, ds: str):
-    """Read table from Postgres in chunks and write Parquet parts to s3://bucket/prefix/public/<table>/load_date=YYYY-MM-DD/"""
+    """Read table from Postgres in chunks and write Parquet parts to s3://bucket/prefix/<table>/load_date=YYYY-MM-DD/"""
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
     engine = hook.get_sqlalchemy_engine()
     s3 = boto3.client("s3")
@@ -50,15 +50,17 @@ def _export_one_table(table: str, ds: str):
 
 @dag(
     dag_id="export_postgres_to_s3_raw_parquet",
-    schedule="@daily",                 # or None if you only trigger manually
-    start_date=datetime(2025, 1, 1),   # pick an appropriate start
+    schedule="@daily",
+    start_date=datetime(2025, 1, 1),
     catchup=False,
     default_args={"owner": "data-eng", "retries": 1},
     tags=["export","postgres","s3","parquet","lake"],
 )
 def export_postgres_to_s3_raw_parquet():
     @task
-    def export_table(table: str, ds: str = "{{ ds }}"):
+    def export_table(table: str, ds: str | None = None):  # Changed this line
+        if ds is None:
+            raise ValueError("execution date (ds) is required")
         _export_one_table(table, ds)
 
     # dynamic mapping over the tables

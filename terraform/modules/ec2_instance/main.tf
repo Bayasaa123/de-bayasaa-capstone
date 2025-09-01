@@ -6,7 +6,7 @@ resource "aws_instance" "this" {
   iam_instance_profile        = aws_iam_instance_profile.profile.name
   associate_public_ip_address = true
 
-  key_name                    = "bootcomp-key"
+  key_name                    = "demo-key"
   user_data                   = local.user_data
 
   private_ip                  = var.private_ip
@@ -18,19 +18,27 @@ resource "aws_instance" "this" {
   }
 }
 
+resource "terraform_data" "provision_every_apply" {
+  count = var.airflow_scripts!="" ? 1 : 0
+  # keep this tied to your instance so if it’s replaced, this re-runs too
+  input = {
+    instance_id = aws_instance.this.id
+  }
 
-resource "null_resource" "instance" {
-  count = var.airflow_scripts ? 1 : 0
+  # the magic: any change here forces replacement → provisioners run again
+  triggers_replace = timestamp()
 
-  provisioner "local-exec" {
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = var.ssh_private_key
-      host        = aws_instance.this.public_ip
-    }
+  connection {
+    host        = aws_instance.this.public_ip
+    user        = "ec2-user"          # or "ubuntu", etc
+    private_key = var.ssh_private_key
+  }
 
-    command = var.airflow_scripts
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Hello from remote-exec at $(date)' | sudo tee /tmp/hello.txt",
+      "${var.airflow_scripts}"
+    ]
   }
 
   depends_on = [aws_instance.this]

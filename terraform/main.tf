@@ -77,6 +77,8 @@ module "ec2-airflow" {
   airflow_admin_pass = var.airflow_admin_pass
   airflow_dags_bucket = module.code_bucket.bucket_name
   airflow_scripts  = "sudo -u airflow aws s3 sync s3://${module.code_bucket.bucket_name}/dags/ /home/airflow/airflow/dags --delete"
+  ssh_private_key = var.ssh_private_key
+  
 
   private_ip      = var.ip_addresses[1]
 

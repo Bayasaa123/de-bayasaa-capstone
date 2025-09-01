@@ -27,7 +27,7 @@ module "ec2-datatabase" {
   airflow_admin_pass = ""
   # airflow_dags_bucket = module.code_bucket.bucket_name
   airflow_dags_bucket = ""
-  airflow_scripts = ""
+  airflow_scripts  = ""
   ssh_private_key = var.ssh_private_key
   
   private_ip = var.ip_addresses[0]

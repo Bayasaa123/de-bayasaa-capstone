@@ -27,7 +27,7 @@ def load_csv_to_postgres(table_name: str, s3_key: str):
     """Load CSV from S3 and insert into PostgreSQL"""
     # Get S3 object
     s3_hook = S3Hook(aws_conn_id='aws_default')
-    bucket_name = 'data-lake-dev-buku'
+    bucket_name = 'data-lake-dev-bayasaa'
 
     # Read CSV file from S3
     s3_object = s3_hook.get_key(key=s3_key, bucket_name=bucket_name)

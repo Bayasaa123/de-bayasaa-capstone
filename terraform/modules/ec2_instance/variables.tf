@@ -78,3 +78,8 @@ variable "ssh_private_key" {
   type        = string
   sensitive   = true  # Marks as sensitive to hide in logs
 }
+
+variable "enable_airflow_seed" {
+  type    = bool
+  default = true
+}

@@ -21,21 +21,39 @@ resource "aws_iam_instance_profile" "profile" {
 }
 
 resource "aws_iam_role_policy" "s3_logs_rw" {
-    name    = "airflow-s3-logs-rw"
-    role    = aws_iam_role.role.id
-    policy  = jsonencode({
-        Version = "2012-10-17",
-        Statement = [
-            {
-                Effect = "Allow",
-                Action = ["s3:*",
-                "s3:ListBucket"],
-                Resource = [
-                    "arn:aws:s3:::${var.airflow_logs_bucket}",
-                    "arn:aws:s3:::${var.airflow_logs_bucket}/*",
-                    "arn:aws:s3:::${var.airflow_dags_bucket}",
-                    "arn:aws:s3:::${var.airflow_dags_bucket}/*"
-                ]
-            }]
-    })
+  name   = "airflow-s3-logs-rw"
+  role   = aws_iam_role.role.id
+  policy = jsonencode({
+    Version="2012-10-17",
+    Statement=[{
+      Effect="Allow",
+      Action=[
+        "s3:*",
+        "s3:ListBucket"
+        ],
+      Resource=[
+        "arn:aws:s3:::${var.airflow_logs_bucket}",
+        "arn:aws:s3:::${var.airflow_logs_bucket}/*",
+        "arn:aws:s3:::${var.airflow_dags_bucket}",
+        "arn:aws:s3:::${var.airflow_dags_bucket}/*"
+      ]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "batch_policy" {
+  name   = "airflow-batch-policy"
+  role   = aws_iam_role.role.id
+  policy = jsonencode({
+    Version="2012-10-17",
+    Statement=[{
+      Effect="Allow",
+      Action=[
+        "batch:*"
+        ],
+      Resource=[
+        "*"
+      ]
+    }]
+  })
 }

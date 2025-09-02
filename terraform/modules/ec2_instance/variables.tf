@@ -83,3 +83,8 @@ variable "enable_airflow_seed" {
   type    = bool
   default = true
 }
+
+variable deploy_dags {
+  description = "Flag to deploy DAGs to Airflow"
+  type        = bool
+}

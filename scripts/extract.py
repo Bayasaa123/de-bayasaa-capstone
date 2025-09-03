@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 import psycopg2
 
 # Database connection string
-db_user = "user"
+db_user = "bootcamp"
 db_password = "password"
 db_host = "localhost"
 db_port = "5432"

@@ -256,15 +256,17 @@ module "network" {
 }
 
 module "batch" {
-  source     = "./modules/batch"
-  project    = var.project
-  environment = var.environment
-  vpc_id = module.network.vpc_id #"vpc-0e700d027b958f93d"
-  private_subnet_ids = module.network.public_subnet_ids #["subnet-00bf716de07fa9b9e", "subnet-0f4239c97c2186c87", "subnet-0134bb6729ec86325"]
-  dbt_container_image = var.dbt_container_image
-  dbt_vcpu = var.dbt_vcpu
-  dbt_memory = var.dbt_memory
-  aws_region = var.aws_region
+  source                  = "./modules/batch"
+  project                 = var.project
+  environment             = var.environment
+  vpc_id                  = module.network.vpc_id
+  private_subnet_ids      = module.network.private_subnet_ids
+  dbt_container_image     = var.dbt_container_image
+  dbt_vcpu                = var.dbt_vcpu
+  dbt_memory              = var.dbt_memory
+  aws_region              = var.aws_region
+  private_route_table_ids = module.network.private_route_table_ids
+  depends_on              = [module.network]
 }
 
 

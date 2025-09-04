@@ -8,12 +8,13 @@ import pyarrow.parquet as pq
 from airflow.decorators import dag, task
 from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.operators.python import get_current_context
 
 # --- Config (edit or set as Airflow Variables) ---
 POSTGRES_CONN_ID = Variable.get("PG_CONN_ID", default_var="postgres_default")
 SCHEMA           = Variable.get("PG_SCHEMA", default_var="public")
 TABLES           = Variable.get("PG_TABLES", default_var="customers,accounts,transactions").split(",")
-S3_BUCKET        = Variable.get("LAKE_BUCKET", default_var="data-lake-dev-buku")
+S3_BUCKET        = Variable.get("LAKE_BUCKET", default_var="data-lake-dev-bayasaa")
 S3_PREFIX        = Variable.get("LAKE_RAW_PREFIX", default_var="raw")
 CHUNK_ROWS       = int(Variable.get("EXPORT_CHUNK_ROWS", default_var="200000"))  # tune if needed
 
@@ -33,6 +34,11 @@ def _export_one_table(table: str, ds: str):
                 continue
 
             if table == "customers":
+                df['id_number'] = df['id_number'].astype(str)
+                df['phone_number'] = df['phone_number'].astype(str)
+                df['postal_code'] = df['postal_code'].astype(str)
+                df['credit_score'] = df['credit_score'].astype(str)
+
                 schema_pa = pa.schema([
                     pa.field('customer_code', pa.string()),
                     pa.field('first_name', pa.string()),
@@ -82,12 +88,10 @@ def _export_one_table(table: str, ds: str):
 
 def export_postgres_to_s3_raw_parquet():
     @task
-    def export_table(table: str, ds: str | None = None):  # Changed this line
-        if ds is None:
-            raise ValueError("execution date (ds) is required")
+    def export_table(table: str):
+        ds = get_current_context()["ds"]
         _export_one_table(table, ds)
 
-    # dynamic mapping over the tables
     export_table.expand(table=TABLES)
 
 export_postgres_to_s3_raw_parquet()

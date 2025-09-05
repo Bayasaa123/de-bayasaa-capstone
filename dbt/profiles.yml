@@ -10,20 +10,20 @@
 #       type: postgres
 #       user: user
 #   target: dev
-dbt_demo2:
-  outputs:
-    dev:
-      dbname: bootcamp_db
-      host: 10.20.1.50
-      pass: bootcamp_password
-      port: 5432
-      schema: public
-      threads: 5
-      type: postgres
-      user: bootcamp_user
-  target: dev
+# dbt_demo2:
+#   outputs:
+#     dev:
+#       dbname: bootcamp_db
+#       host: 10.20.1.50
+#       pass: bootcamp_password
+#       port: 5432
+#       schema: public
+#       threads: 5
+#       type: postgres
+#       user: bootcamp_user
+#   target: dev
 
-dbt:
+dbt_lake:
   target: dev
   outputs:
     dev:

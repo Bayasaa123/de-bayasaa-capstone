@@ -33,5 +33,5 @@ dbt_lake:
       database: AwsDataCatalog
       schema: raw
       s3_staging_dir: s3://data-lake-dev-bayasaa/athena/staging/
-      s3_data_dir:    s3://data-lake-dev-bayasaa/raw/
+      s3_data_dir:    s3://data-lake-dev-bayasaa/
       threads: 5

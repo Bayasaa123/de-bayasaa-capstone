@@ -32,6 +32,6 @@ dbt_lake:
       work_group: primary
       database: AwsDataCatalog
       schema: raw
-      s3_staging_dir: s3://de-bootcamp-bayasaa/
+      s3_staging_dir: s3://de-bootcamp-bayasaa/athena/staging/
       s3_data_dir:    s3://data-lake-dev-bayasaa/raw/
       threads: 5

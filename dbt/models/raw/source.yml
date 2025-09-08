@@ -16,4 +16,3 @@ sources:
             description: "Last name of the customer"
           - name: email
             description: "Email address of the customer"
- 

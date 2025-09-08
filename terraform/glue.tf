@@ -85,6 +85,11 @@ resource "aws_glue_catalog_table" "raw_customers" {
       name = "email"
       type = "string"
       }
+    
+    columns {
+      name = "phone_number"
+      type = "string"
+      }
     columns {
       name = "province"
       type = "string"

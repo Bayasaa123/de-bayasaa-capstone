@@ -68,6 +68,16 @@ resource "aws_iam_role_policy_attachment" "batch_attach_glue" {
     policy_arn = "arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "batch_attach_athena" {
+  role       = aws_iam_role.task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonAthenaFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "batch_attach_s3" {
+  role       = aws_iam_role.task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
 # Logs
 resource "aws_cloudwatch_log_group" "batch" {
     name = "/aws/batch/${local.name}"

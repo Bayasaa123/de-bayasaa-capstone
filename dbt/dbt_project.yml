@@ -51,12 +51,16 @@ clean-targets:         # directories to be removed by `dbt clean`
 #       +tags: mart
 models:
   dbt:
-    raw:
-      +materialized: table
-      +schema: raw
-      +tags: raw
     clean:
       +materialized: table
       +schema: clean
       +tags: clean
+    warehouse:
+      +materialized: table
+      +schema: warehouse
+      +tags: warehouse
+    mart:
+      +materialized: table
+      +schema: mart
+      +tags: mart
  

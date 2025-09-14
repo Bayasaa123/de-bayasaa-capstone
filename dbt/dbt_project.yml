@@ -50,7 +50,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 #       +schema: mart  # This will create a schema called 'marts' in your database
 #       +tags: mart
 models:
-  dbt:
+  dbt_lake:
     clean:
       +materialized: table
       +schema: clean

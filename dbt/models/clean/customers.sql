@@ -12,7 +12,7 @@ with dedup_customer as (
         {{ source('raw', 'customers') }} c
 ),
 
-customers as (
+raw_customers as (
     SELECT
         customer_code,
         first_name,
@@ -53,4 +53,4 @@ SELECT
     credit_score,
     primary_bank,
     primary_branch
-FROM customers
+FROM raw_customers

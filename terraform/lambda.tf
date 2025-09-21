@@ -46,6 +46,9 @@ resource "aws_lambda_function" "api_reader" {
 
   environment {
     variables = {
+        # MODE = "youtube"
+        VIDEO = "https://www.youtube.com/watch?v=5jml5h0RaKs"
+        YT_QUERY = "--comments 10"
+        YT_API_KEY = local.yt_api_key
     }
   }
-}

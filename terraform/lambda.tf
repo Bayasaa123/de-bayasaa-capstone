@@ -1,4 +1,4 @@
-# IAM role for Lambda with CloudWatch Logs
+# IAM role for Lambda
 resource "aws_iam_role" "lambda_exec" {
   name = "${var.project}-lambda-exec"
   assume_role_policy = jsonencode({
@@ -24,10 +24,10 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_s3_object" "lambda_zip" {
-  bucket = module.code_bucket.bucket_name
-  key    = "lambda/lambda.zip"
-  source = data.archive_file.lambda_zip.output_path
-  etag   = filemd5(data.archive_file.lambda_zip.output_path)
+  bucket                 = module.code_bucket.bucket_name
+  key                    = "lambda/lambda.zip"
+  source                 = data.archive_file.lambda_zip.output_path
+  etag                   = filemd5(data.archive_file.lambda_zip.output_path)
   content_type           = "application/zip"
   server_side_encryption = "AES256"
 }
@@ -46,9 +46,38 @@ resource "aws_lambda_function" "api_reader" {
 
   environment {
     variables = {
-        # MODE = "youtube"
-        VIDEO = "https://www.youtube.com/watch?v=5jml5h0RaKs"
-        YT_QUERY = "--comments 10"
-        YT_API_KEY = local.yt_api_key
+        MAX_VIDEOS     = "5"
+        MAX_COMMENTS   = "10"
+        YT_QUERY       = "data engineering"
+        SECRET_NAME = local.yt_api_key
+        OUTPUT_BUCKET = module.data_bucket.bucket_name
+      }
     }
   }
+
+
+resource "aws_iam_role_policy" "lambda_secrets" {
+  role = aws_iam_role.lambda_exec.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect: "Allow",
+      Action: ["secretsmanager:GetSecretValue"],
+      Resource: data.aws_secretsmanager_secret.yt.arn
+    }]
+  })
+}
+
+
+resource "aws_iam_role_policy" "s3_access" {
+  role = aws_iam_role.lambda_exec.id
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect: "Allow",
+      Action: ["s3:*"],
+      Resource: "*"
+    }]
+  })
+}
+ 

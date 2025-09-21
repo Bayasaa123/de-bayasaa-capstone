@@ -46,9 +46,9 @@ resource "aws_lambda_function" "api_reader" {
 
   environment {
     variables = {
-      MODE      = var.mode
-      YT_QUERY  = var.yt_query
-      YT_API_KEY = var.yt_api_key
+    #   MODE      = var.mode
+    #   YT_QUERY  = var.yt_query
+    #   YT_API_KEY = var.yt_api_key
     }
   }
 }
